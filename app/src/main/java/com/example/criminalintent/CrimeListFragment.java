@@ -45,11 +45,23 @@ public class CrimeListFragment extends Fragment {
         updateUI();
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateUI();
+    }
+
     private void updateUI(){
         mCrimeLab = CrimeLab.get(getContext());
 
-        mAdapter = new CrimeAdapter(mCrimeLab);
-        mCrimeRecyclerView.setAdapter(mAdapter);
+        if (mAdapter == null){
+            mAdapter = new CrimeAdapter(mCrimeLab);
+            mCrimeRecyclerView.setAdapter(mAdapter);
+        }else{
+            mAdapter.notifyDataSetChanged();
+        }
+
+
     }
 
     public class CrimeHolder extends RecyclerView.ViewHolder{
