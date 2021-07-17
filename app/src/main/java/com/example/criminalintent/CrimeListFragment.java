@@ -91,7 +91,7 @@ public class CrimeListFragment extends Fragment {
         public void onClick(View v) {
             int itemPosition = mCrimeRecyclerView.getChildLayoutPosition(v);
             Crime currentCrime = mCrimeLab.getCrimes().get(itemPosition);
-            Intent intent = CrimeActivity.newIntent(getActivity(),currentCrime.getId());
+            Intent intent = CrimePagerActivity.newIntent(getActivity(),currentCrime.getId());
             startActivity(intent);
         }
     }
