@@ -4,6 +4,7 @@ import android.content.Context;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class CrimeLab {
@@ -32,11 +33,19 @@ public class CrimeLab {
     }
 
     public Crime getCrime(UUID id){
-        for (Crime crime: mCrimes){
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            Optional<Crime> matchingObject = getCrimes().stream().
+                    filter(p -> p.getId().equals(id))
+                    .findFirst();
+            Crime crime = matchingObject.get();
+            return crime;
+        }else{
+            for (Crime crime: mCrimes){
             if (crime.getId() == id){
                 return crime;
             }
         }
         return null;
+        }
     }
 }

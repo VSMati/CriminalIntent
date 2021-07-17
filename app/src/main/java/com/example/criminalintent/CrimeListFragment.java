@@ -1,20 +1,18 @@
 package com.example.criminalintent;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.List;
 
 public class CrimeListFragment extends Fragment {
 
@@ -36,7 +34,7 @@ public class CrimeListFragment extends Fragment {
     }
 
     @Override
-    public void onViewCreated( View view, Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mCrimeLab = CrimeLab.get(view.getContext());
 
@@ -55,7 +53,8 @@ public class CrimeListFragment extends Fragment {
     }
 
     public class CrimeHolder extends RecyclerView.ViewHolder{
-        private TextView mTitleTextView, mDateTextView;
+        private final TextView mTitleTextView;
+        private final TextView mDateTextView;
 
         public CrimeHolder(View itemView) {
             super(itemView);
@@ -78,22 +77,23 @@ public class CrimeListFragment extends Fragment {
 
         @Override
         public void onClick(View v) {
-            mTitleTextView = v.getRootView().findViewById(R.id.crime_title);
-            String text = mTitleTextView.getText().toString();
-            Toast.makeText( getContext() ,text + " нажат!",Toast.LENGTH_SHORT).
-                    show();
+            int itemPosition = mCrimeRecyclerView.getChildLayoutPosition(v);
+            Crime currentCrime = mCrimeLab.getCrimes().get(itemPosition);
+            Intent intent = CrimeActivity.newIntent(getActivity(),currentCrime.getId());
+            startActivity(intent);
         }
     }
 
     private class CrimeAdapter extends RecyclerView.Adapter<CrimeHolder>{
 
-        private CrimeLab mCrimes;
+        private final CrimeLab mCrimes;
         private final View.OnClickListener mClickListener = new CrimeListener();
 
         public CrimeAdapter(CrimeLab crimes){
             mCrimes = crimes;
         }
 
+        @NonNull
         @Override
         public CrimeHolder onCreateViewHolder( ViewGroup parent, int viewType) {
             View v = LayoutInflater.from(parent.getContext())
@@ -103,12 +103,11 @@ public class CrimeListFragment extends Fragment {
         }
 
         @Override
-        public void onBindViewHolder(CrimeListFragment.CrimeHolder holder, int position) {
-            CrimeHolder crimeHolder = (CrimeHolder) holder;
+        public void onBindViewHolder(@NonNull CrimeListFragment.CrimeHolder holder, int position) {
             Crime crime = mCrimes.getCrimes().get(position);
-            crimeHolder.getTitleTextView().setText(
+            holder.getTitleTextView().setText(
                     crime.getTitle());
-            crimeHolder.getDateTextView().setText(
+            holder.getDateTextView().setText(
                     crime.getStringDate());
             mSolved.setVisibility(crime.isSolved() ? View.VISIBLE : View.INVISIBLE);
         }

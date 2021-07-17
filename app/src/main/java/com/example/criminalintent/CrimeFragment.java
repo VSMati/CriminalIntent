@@ -12,7 +12,11 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
+import java.util.UUID;
 
 
 public class CrimeFragment extends Fragment {
@@ -21,28 +25,40 @@ public class CrimeFragment extends Fragment {
     private Button mDateButton;
     private CheckBox mSolvedCheckBox;
 
+    private static final String ARG_CRIME_ID = "crime_id";
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mCrime = new Crime();
+
+        UUID crimeId = (UUID) getArguments().getSerializable(ARG_CRIME_ID);
+        CrimeLab crimeLab = CrimeLab.get(getActivity());
+        mCrime = crimeLab.getCrime(crimeId);
     }
 
     @Override
     public View onCreateView( LayoutInflater inflater, ViewGroup container,
                               Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_crime,container,false);
+
         mTitleField = v.findViewById(R.id.etTitleField);
         mDateButton = v.findViewById(R.id.btnCrimeData);
         mSolvedCheckBox = v.findViewById(R.id.cbSolved);
 
-        mDateButton.setText(mCrime.getDate().toString());
+        return v;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        mDateButton.setText(mCrime.getStringDate());
         mDateButton.setEnabled(false);
 
+        mSolvedCheckBox.setChecked(mCrime.isSolved());
+        mSolvedCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> mCrime.setSolved(isChecked));
 
-        mSolvedCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            mCrime.setSolved(isChecked);
-        });
-
+        mTitleField.setText(mCrime.getTitle());
         mTitleField.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -59,6 +75,15 @@ public class CrimeFragment extends Fragment {
 
             }
         });
-        return v;
+    }
+
+    public static CrimeFragment newInstance(UUID id){
+        Bundle args = new Bundle();
+        args.putSerializable(ARG_CRIME_ID,id);
+
+        CrimeFragment fragment = new CrimeFragment();
+        fragment.setArguments(args);
+
+        return fragment;
     }
 }
