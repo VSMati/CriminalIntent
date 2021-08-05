@@ -20,12 +20,10 @@ public class CrimeLab {
 
     private CrimeLab(Context context) {
         mCrimes = new ArrayList<>();
-        for (int i = 0; i<100; i++){
-            Crime crime = new Crime();
-            crime.setTitle(String.format("Преступление № %d",i));
-            crime.setSolved(i % 2 == 0);
-            mCrimes.add(crime);
-        }
+    }
+
+    public void addCrime(Crime c){
+        mCrimes.add(c);
     }
 
     public List<Crime> getCrimes(){
@@ -37,8 +35,7 @@ public class CrimeLab {
             Optional<Crime> matchingObject = getCrimes().stream().
                     filter(p -> p.getId().equals(id))
                     .findFirst();
-            Crime crime = matchingObject.get();
-            return crime;
+            return matchingObject.get();
         }else{
             for (Crime crime: mCrimes){
             if (crime.getId() == id){

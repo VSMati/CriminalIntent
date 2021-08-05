@@ -4,4 +4,8 @@
     <string name="crime_title_label">Название</string>
     <string name="crime_details_label">Детали</string>
     <string name="crime_solved_label">Решено</string>
+    <string name="new_crime">Новое преступление</string>
+    <string name="show_subtitle">Показать подзаголовок</string>
+    <string name="hide_subtitle">Скрыть подзаголовок</string>
+    <string name="subtitle_format">%d преступления</string>
 </resources>
