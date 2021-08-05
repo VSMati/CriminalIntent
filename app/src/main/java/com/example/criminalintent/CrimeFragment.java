@@ -1,7 +1,5 @@
 package com.example.criminalintent;
 
-
-
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -15,9 +13,12 @@ import android.widget.EditText;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentResultListener;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.UUID;
-
 
 public class CrimeFragment extends Fragment {
     private Crime mCrime;
@@ -31,6 +32,7 @@ public class CrimeFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        assert getArguments() != null;
         UUID crimeId = (UUID) getArguments().getSerializable(ARG_CRIME_ID);
         CrimeLab crimeLab = CrimeLab.get(getActivity());
         mCrime = crimeLab.getCrime(crimeId);
@@ -52,8 +54,7 @@ public class CrimeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mDateButton.setText(mCrime.getStringDate());
-        mDateButton.setEnabled(false);
+        updateDate(mCrime.getDate());
 
         mSolvedCheckBox.setChecked(mCrime.isSolved());
         mSolvedCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> mCrime.setSolved(isChecked));
@@ -75,6 +76,17 @@ public class CrimeFragment extends Fragment {
 
             }
         });
+
+        mDateButton.setOnClickListener(v -> {
+            DatePickerFragment dpf = new DatePickerFragment();
+            dpf.show(getParentFragmentManager(),DatePickerFragment.TAG);
+        });
+
+        getParentFragmentManager().setFragmentResultListener(DatePickerFragment.REQUEST_DATE, this, (requestKey, result) -> {
+            Date date = (Date) result.getSerializable(DatePickerFragment.KEY_DATE);
+            mCrime.setDate(date);
+            updateDate(date);
+        });
     }
 
     public static CrimeFragment newInstance(UUID id){
@@ -85,5 +97,10 @@ public class CrimeFragment extends Fragment {
         fragment.setArguments(args);
 
         return fragment;
+    }
+
+    public void updateDate(Date date){
+        DateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy");
+        mDateButton.setText(dateFormat.format(date));
     }
 }
