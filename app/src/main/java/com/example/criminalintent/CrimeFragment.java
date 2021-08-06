@@ -1,6 +1,5 @@
 package com.example.criminalintent;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -15,6 +14,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.NavUtils;
 import androidx.fragment.app.Fragment;
 
 import java.text.DateFormat;
@@ -40,9 +40,7 @@ public class CrimeFragment extends Fragment {
         if (item.getItemId() == R.id.delete_crime) {
             CrimeLab crimeLab = CrimeLab.get(getContext());
             crimeLab.deleteCrime(mCrime);
-            Intent intent = CrimePagerActivity.newIntent(getContext(), mCrime.getId());
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
+            NavUtils.navigateUpFromSameTask(requireActivity());
             return true;
         }
         return super.onOptionsItemSelected(item);
