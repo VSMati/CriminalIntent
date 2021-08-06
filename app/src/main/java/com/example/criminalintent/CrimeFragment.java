@@ -1,6 +1,5 @@
 package com.example.criminalintent;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -16,12 +15,9 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentResultListener;
 
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
 
@@ -41,17 +37,15 @@ public class CrimeFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()){
-            case R.id.delete_crime:
-                CrimeLab crimeLab = CrimeLab.get(getContext());
-                crimeLab.deleteCrime(mCrime);
-                Intent intent = CrimePagerActivity.newIntent(getContext(),mCrime.getId());
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        if (item.getItemId() == R.id.delete_crime) {
+            CrimeLab crimeLab = CrimeLab.get(getContext());
+            crimeLab.deleteCrime(mCrime);
+            Intent intent = CrimePagerActivity.newIntent(getContext(), mCrime.getId());
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -127,7 +121,7 @@ public class CrimeFragment extends Fragment {
     }
 
     public void updateDate(Date date){
-        DateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy");
+        DateFormat dateFormat = DateFormat.getDateInstance();
         mDateButton.setText(dateFormat.format(date));
     }
 }

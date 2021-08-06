@@ -1,7 +1,6 @@
 package com.example.criminalintent;
 
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
 
@@ -33,8 +32,8 @@ public class Crime {
     }
 
     public String getStringDate(){
-        DateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy");
-        return dateFormat.format(mDate).toString();
+        DateFormat dateFormat = DateFormat.getDateInstance();
+        return dateFormat.format(mDate);
     }
 
     public void setDate(Date date) {
