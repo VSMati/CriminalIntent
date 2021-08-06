@@ -5,6 +5,7 @@
     <string name="crime_details_label">Детали</string>
     <string name="crime_solved_label">Решено</string>
     <string name="new_crime">Новое преступление</string>
+    <string name="delete_crime">Удалить преступление</string>
     <string name="show_subtitle">Показать подзаголовок</string>
     <string name="hide_subtitle">Скрыть подзаголовок</string>
     <plurals name="subtitle_plural">
