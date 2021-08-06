@@ -7,5 +7,9 @@
     <string name="new_crime">Новое преступление</string>
     <string name="show_subtitle">Показать подзаголовок</string>
     <string name="hide_subtitle">Скрыть подзаголовок</string>
-    <string name="subtitle_format">%d преступления</string>
+    <plurals name="subtitle_plural">
+        <item quantity="one">%d преступление</item>
+        <item quantity="other">%d преступления</item>
+        <item quantity="many">%d преступлений</item>
+    </plurals>
 </resources>
