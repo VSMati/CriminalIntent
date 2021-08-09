@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.Formatter;
+import java.util.List;
 
 
 public class CrimeListFragment extends Fragment {
@@ -56,7 +57,7 @@ public class CrimeListFragment extends Fragment {
                 return true;
             case R.id.show_subtitle:
                 mSubtitleVisible = !mSubtitleVisible;
-                getActivity().invalidateOptionsMenu();
+                requireActivity().invalidateOptionsMenu();
                 updateSubtitle();
                 return true;
             default:
@@ -91,7 +92,7 @@ public class CrimeListFragment extends Fragment {
         mCrimeLab = CrimeLab.get(view.getContext());
 
         mCrimeRecyclerView = view.findViewById(R.id.crime_recycler_view);
-        mCrimeRecyclerView.setAdapter(new CrimeAdapter(mCrimeLab));
+        mCrimeRecyclerView.setAdapter(new CrimeAdapter(mCrimeLab.getCrimes()));
         mCrimeRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         updateUI();
@@ -139,10 +140,10 @@ public class CrimeListFragment extends Fragment {
 
     private class CrimeAdapter extends RecyclerView.Adapter<CrimeHolder>{
 
-        private final CrimeLab mCrimes;
+        private List<Crime> mCrimes;
         private final View.OnClickListener mClickListener = new CrimeListener();
 
-        public CrimeAdapter(CrimeLab crimes){
+        public CrimeAdapter(List<Crime> crimes){
             mCrimes = crimes;
         }
 
@@ -157,7 +158,7 @@ public class CrimeListFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(@NonNull CrimeListFragment.CrimeHolder holder, int position) {
-            Crime crime = mCrimes.getCrimes().get(position);
+            Crime crime = mCrimes.get(position);
             holder.getTitleTextView().setText(
                     crime.getTitle());
             holder.getDateTextView().setText(
@@ -168,7 +169,11 @@ public class CrimeListFragment extends Fragment {
 
         @Override
         public int getItemCount() {
-            return mCrimes.getCrimes().size();
+            return mCrimes.size();
+        }
+
+        public void setCrimes(List<Crime> crimes){
+            mCrimes = crimes;
         }
     }
 
@@ -176,9 +181,10 @@ public class CrimeListFragment extends Fragment {
         mCrimeLab = CrimeLab.get(getContext());
 
         if (mAdapter == null){
-            mAdapter = new CrimeAdapter(mCrimeLab);
+            mAdapter = new CrimeAdapter(mCrimeLab.getCrimes());
             mCrimeRecyclerView.setAdapter(mAdapter);
         }else{
+            mAdapter.setCrimes(mCrimeLab.getCrimes());
             mAdapter.notifyDataSetChanged();
         }
         updateSubtitle();
@@ -193,7 +199,7 @@ public class CrimeListFragment extends Fragment {
         if (!mSubtitleVisible){
             subtitle = null;
         }
-        AppCompatActivity activity = (AppCompatActivity) getActivity();
+        AppCompatActivity activity = (AppCompatActivity) requireActivity();
         activity.getSupportActionBar().setSubtitle(subtitle);
     }
 
