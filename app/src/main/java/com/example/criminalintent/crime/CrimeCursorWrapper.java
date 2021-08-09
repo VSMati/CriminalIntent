@@ -1,4 +1,4 @@
-package com.example.criminalintent;
+package com.example.criminalintent.crime;
 
 import android.database.Cursor;
 import android.database.CursorWrapper;

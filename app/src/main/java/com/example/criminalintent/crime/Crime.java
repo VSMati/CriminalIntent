@@ -1,4 +1,4 @@
-package com.example.criminalintent;
+package com.example.criminalintent.crime;
 
 import java.text.DateFormat;
 import java.util.Date;

@@ -1,4 +1,4 @@
-package com.example.criminalintent;
+package com.example.criminalintent.crime;
 
 import android.os.Bundle;
 
@@ -6,6 +6,8 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+
+import com.example.criminalintent.R;
 
 public class CrimeListActivity extends AppCompatActivity {
 

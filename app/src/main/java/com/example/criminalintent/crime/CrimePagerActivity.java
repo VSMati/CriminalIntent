@@ -1,4 +1,4 @@
-package com.example.criminalintent;
+package com.example.criminalintent.crime;
 
 import android.content.Context;
 import android.content.Intent;
@@ -11,6 +11,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
+
+import com.example.criminalintent.R;
 
 import java.util.List;
 import java.util.UUID;

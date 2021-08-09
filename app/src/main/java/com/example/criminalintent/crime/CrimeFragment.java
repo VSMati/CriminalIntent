@@ -1,4 +1,4 @@
-package com.example.criminalintent;
+package com.example.criminalintent.crime;
 
 import android.os.Bundle;
 import android.text.Editable;
@@ -16,6 +16,8 @@ import android.widget.EditText;
 import androidx.annotation.NonNull;
 import androidx.core.app.NavUtils;
 import androidx.fragment.app.Fragment;
+
+import com.example.criminalintent.R;
 
 import java.text.DateFormat;
 import java.util.Date;
