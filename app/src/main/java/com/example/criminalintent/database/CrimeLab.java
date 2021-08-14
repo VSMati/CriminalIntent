@@ -1,12 +1,9 @@
-package com.example.criminalintent.crime;
+package com.example.criminalintent.database;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-
-import com.example.criminalintent.database.CrimeBaseHelper;
-import com.example.criminalintent.database.CrimeDbSchema;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -93,6 +90,7 @@ public class CrimeLab {
         contentValues.put(CrimeDbSchema.CrimeTable.Cols.TITLE, crime.getTitle());
         contentValues.put(CrimeDbSchema.CrimeTable.Cols.DATE, crime.getDate().toString());
         contentValues.put(CrimeDbSchema.CrimeTable.Cols.SOLVED, crime.isSolved() ? 1:0);
+        contentValues.put(CrimeDbSchema.CrimeTable.Cols.SUSPECT,crime.getSuspect());
 
         return contentValues;
     }

@@ -13,4 +13,17 @@
         <item quantity="other">%d преступления</item>
         <item quantity="many">%d преступлений</item>
     </plurals>
+
+    <string name="choose_button">Выберите виновного</string>
+    <string name="send_report_button">Отправить сводку</string>
+
+    <string name="crime_report">%1s!
+    Преступление было обнаружено %2s. %3s и %4s .</string>
+
+    <string name="crime_report_solved">Оно было решено</string>
+    <string name="crime_report_unsolved">Оно не было решено</string>
+    <string name="crime_report_no_suspect">подозреваемых нет</string>
+    <string name="crime_report_suspect">подозреваемым является %s</string>
+    <string name="crime_report_subject">Криминал Сводка о преступлении</string>
+    <string name="send_report">Отправить сводку с помощью...</string>
 </resources>

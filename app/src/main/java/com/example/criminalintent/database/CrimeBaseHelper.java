@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import androidx.annotation.Nullable;
 
 public class CrimeBaseHelper extends SQLiteOpenHelper {
-    public static final int VERSION = 1;
+    public static final int VERSION = 2;
     public static final String DATABASE_NAME = "crimeBase.db";
 
     public CrimeBaseHelper(@Nullable Context context) {
@@ -22,7 +22,8 @@ public class CrimeBaseHelper extends SQLiteOpenHelper {
                 CrimeDbSchema.CrimeTable.Cols.UUID + ", "+
                 CrimeDbSchema.CrimeTable.Cols.TITLE + ", "+
                 CrimeDbSchema.CrimeTable.Cols.DATE + ", "+
-                CrimeDbSchema.CrimeTable.Cols.SOLVED + ")" );
+                CrimeDbSchema.CrimeTable.Cols.SOLVED +
+                CrimeDbSchema.CrimeTable.Cols.SUSPECT + ")" );
     }
 
     @Override

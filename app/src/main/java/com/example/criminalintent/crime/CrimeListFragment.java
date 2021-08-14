@@ -19,6 +19,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.criminalintent.R;
+import com.example.criminalintent.database.Crime;
+import com.example.criminalintent.database.CrimeLab;
 
 import java.util.List;
 
@@ -132,7 +134,7 @@ public class CrimeListFragment extends Fragment {
 
         @Override
         public void onClick(View v) {
-            int itemPosition = mCrimeRecyclerView.getChildLayoutPosition(v);
+            int itemPosition = mCrimeRecyclerView.getChildAdapterPosition(v);
             Crime currentCrime = mCrimeLab.getCrimes().get(itemPosition);
             Intent intent = CrimePagerActivity.newIntent(getActivity(),currentCrime.getId());
             startActivity(intent);

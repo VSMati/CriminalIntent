@@ -13,11 +13,18 @@ import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import com.example.criminalintent.R;
+import com.example.criminalintent.database.Crime;
+import com.example.criminalintent.database.CrimeLab;
 
 import java.util.List;
 import java.util.UUID;
 
 public class CrimePagerActivity extends AppCompatActivity {
+    /*TODO:let me explain you this bug.
+    *  So, when i set up my date in CrimeFragment it sets to another CrimeFragment
+    * which id is less than this fragment by 1
+    * hmm, and results are shown only in CrimePagerActivity
+    * CrimeListFragment seems to turn blind eye on this problem */
 
     private ViewPager mViewPager;
     private List<Crime> mCrimes;
