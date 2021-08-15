@@ -1,14 +1,35 @@
 package com.example.criminalintent.database;
 
+import androidx.annotation.NonNull;
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+import androidx.room.TypeConverter;
+import androidx.room.TypeConverters;
+
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.UUID;
 
+@Entity
 public class Crime {
+    @PrimaryKey
+    @TypeConverters({IdConverter.class})
+    @NonNull
     private UUID mId;
+
+    @ColumnInfo(name = "suspect")
     private String mSuspect;
+
+    @ColumnInfo(name="title")
     private String mTitle;
+
+    @ColumnInfo(name = "date")
+    @TypeConverters({DateConverter.class})
+    @NonNull
     private Date mDate;
+
+    @ColumnInfo(name = "solved")
     private boolean mSolved;
 
     public Crime(){
@@ -18,6 +39,14 @@ public class Crime {
     public Crime(UUID id) {
         mId = id;
         mDate = new Date();
+    }
+
+    public void setId(UUID id) {
+        mId = id;
+    }
+
+    public void setDate(Date date) {
+        mDate = date;
     }
 
     public UUID getId() {
@@ -39,10 +68,6 @@ public class Crime {
     public String getStringDate(){
         DateFormat dateFormat = DateFormat.getDateInstance();
         return dateFormat.format(mDate);
-    }
-
-    public void setDate(Date date) {
-        mDate = date;
     }
 
     public boolean isSolved() {

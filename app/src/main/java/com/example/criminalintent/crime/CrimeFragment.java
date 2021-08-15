@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.text.Editable;
@@ -29,18 +30,21 @@ import androidx.fragment.app.Fragment;
 
 import com.example.criminalintent.R;
 import com.example.criminalintent.database.Crime;
-import com.example.criminalintent.database.CrimeLab;
+import com.example.criminalintent.database.CrimeDatabase;
 
+import java.lang.ref.WeakReference;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.Date;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 public class CrimeFragment extends Fragment {
     private Crime mCrime;
     private EditText mTitleField;
     private Button mDateButton, mSendButton, mSuspectButton;
     private CheckBox mSolvedCheckBox;
-    private CrimeLab mCrimeLab;
+    private CrimeDatabase mCrimeDatabase;
 
     private static final String ARG_CRIME_ID = "crime_id";
 
@@ -56,8 +60,8 @@ public class CrimeFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.delete_crime) {
-            CrimeLab crimeLab = CrimeLab.get(getContext());
-            crimeLab.deleteCrime(mCrime);
+            mCrimeDatabase = CrimeDatabase.getInstance(getContext());
+            new DeleteTask(CrimeFragment.this,mCrime).execute();
             NavUtils.navigateUpFromSameTask(requireActivity());
             return true;
         }
@@ -71,8 +75,13 @@ public class CrimeFragment extends Fragment {
 
         assert getArguments() != null;
         UUID crimeId = (UUID) getArguments().getSerializable(ARG_CRIME_ID);
-        mCrimeLab = CrimeLab.get(getActivity());
-        mCrime = mCrimeLab.getCrime(crimeId);
+        mCrimeDatabase = CrimeDatabase.getInstance(getActivity());
+        try {
+            mCrime = new RetrieveTask(CrimeFragment.this, crimeId)
+                    .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR).get();
+        } catch (ExecutionException | InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -98,7 +107,6 @@ public class CrimeFragment extends Fragment {
                 PackageManager.MATCH_DEFAULT_ONLY) == null){
             mSuspectButton.setEnabled(false);
         }
-
 
         updateDate(mCrime.getDate());
 
@@ -156,7 +164,8 @@ public class CrimeFragment extends Fragment {
     public void onPause() {
         super.onPause();
 
-        mCrimeLab.updateCrime(mCrime);
+        new UpdateTask(CrimeFragment.this,mCrime)
+                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     public static CrimeFragment newInstance(UUID id){
@@ -173,7 +182,8 @@ public class CrimeFragment extends Fragment {
         DateFormat dateFormat = DateFormat.getDateInstance();
         mDateButton.setText(dateFormat.format(date));
         mCrime.setDate(date);
-        mCrimeLab.updateCrime(mCrime);
+        new UpdateTask(CrimeFragment.this,mCrime)
+                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     public String getCrimeReport(){
@@ -227,4 +237,51 @@ public class CrimeFragment extends Fragment {
                     }
                 }
             });
+    private static class RetrieveTask extends AsyncTask< Void,Void,Crime >{
+        private final WeakReference<CrimeFragment> activityReference;
+        private UUID mUUID;
+
+        public RetrieveTask(CrimeFragment context, UUID id) {
+            this.activityReference = new WeakReference<>(context);
+            this.mUUID = id;
+        }
+        @Override
+        protected Crime doInBackground(Void... voids) {
+            return activityReference.get().mCrimeDatabase.getCrimeDao().getById(mUUID);
+        }
+    }
+
+    private static class UpdateTask extends AsyncTask< Void,Void,Void>{
+        private final WeakReference<CrimeFragment> activityReference;
+        private Crime crime;
+
+        public UpdateTask(CrimeFragment context, Crime crime) {
+            this.activityReference = new WeakReference<>(context);
+            this.crime = crime;
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            activityReference.get().mCrimeDatabase.getCrimeDao().update(crime);
+            return null;
+        }
+    }
+
+    private static class DeleteTask extends AsyncTask< Void,Void,Void>{
+        private final WeakReference<CrimeFragment> activityReference;
+        private Crime crime;
+
+        public DeleteTask(CrimeFragment context, Crime crime) {
+            this.activityReference = new WeakReference<>(context);
+            this.crime = crime;
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            activityReference.get().mCrimeDatabase.getCrimeDao().delete(crime);
+            return null;
+        }
+    }
 }
+
+
