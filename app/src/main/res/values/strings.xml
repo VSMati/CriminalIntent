@@ -14,6 +14,8 @@
         <item quantity="many">%d преступлений</item>
     </plurals>
 
+    <string name="permission_message">Разрешение не было предоставлено</string>
+
     <string name="choose_button">Выберите виновного</string>
     <string name="send_report_button">Отправить сводку</string>
 
