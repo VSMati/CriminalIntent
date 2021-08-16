@@ -53,4 +53,13 @@
         android:layout_height="wrap_content"
         android:layout_margin="2dp"
         android:text="@string/send_report_button" />
+
+    <Button
+        android:id="@+id/btnDial"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="2dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="2dp"
+        android:text="@string/dial_a_number" />
 </androidx.appcompat.widget.LinearLayoutCompat>

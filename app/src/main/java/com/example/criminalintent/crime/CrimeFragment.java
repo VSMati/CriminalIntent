@@ -1,9 +1,11 @@
 package com.example.criminalintent.crime;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.database.CursorJoiner;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -26,6 +28,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.core.app.NavUtils;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.criminalintent.R;
@@ -34,7 +37,6 @@ import com.example.criminalintent.database.CrimeDatabase;
 
 import java.lang.ref.WeakReference;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -42,11 +44,23 @@ import java.util.concurrent.ExecutionException;
 public class CrimeFragment extends Fragment {
     private Crime mCrime;
     private EditText mTitleField;
-    private Button mDateButton, mSendButton, mSuspectButton;
+    private Button mDateButton, mSendButton, mSuspectButton, mDialButton;
     private CheckBox mSolvedCheckBox;
     private CrimeDatabase mCrimeDatabase;
 
+    private String mContactNumber;
+
     private static final String ARG_CRIME_ID = "crime_id";
+
+    private ActivityResultLauncher mRequestLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(),
+                    result -> {
+                        if (result){
+                            //TODO: continue workflow
+                        }else{
+                            //TODO: add dialog-explanation
+                        }
+                    });
 
     final Intent pickContact = new Intent(Intent.ACTION_PICK,
             ContactsContract.Contacts.CONTENT_URI);
@@ -94,6 +108,7 @@ public class CrimeFragment extends Fragment {
         mSolvedCheckBox = v.findViewById(R.id.cbSolved);
         mSendButton = v.findViewById(R.id.btnReport);
         mSuspectButton = v.findViewById(R.id.btnSuspect);
+        mDialButton = v.findViewById(R.id.btnDial);
 
         return v;
     }
@@ -146,7 +161,7 @@ public class CrimeFragment extends Fragment {
             startActivity(intent);
         });
 
-        mSuspectButton.setOnClickListener( v ->{
+        mSuspectButton.setOnClickListener( v -> {
             launchSomeActivity.launch(pickContact);
         });
 
@@ -211,32 +226,21 @@ public class CrimeFragment extends Fragment {
 
     ActivityResultLauncher<Intent> launchSomeActivity = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
-            new ActivityResultCallback<ActivityResult>() {
-                @Override
-                public void onActivityResult(ActivityResult result) {
-                    if (result.getResultCode() == Activity.RESULT_OK) {
-                        Intent data = result.getData();
-                        Uri contactUri = data.getData();
-                        String[] queryFields = new String[]{
-                                ContactsContract.Contacts.DISPLAY_NAME
-                        };
-                        Cursor c = requireActivity().getContentResolver()
-                                .query(contactUri,queryFields,
-                                        null,null,null);
-                        try {
-                            if (c.getCount() == 0){
-                                return ;
-                            }
-                            c.moveToFirst();
-                            String suspect = c.getString(0);
-                            mCrime.setSuspect(suspect);
-                            mSuspectButton.setText(suspect);
-                        }finally {
-                            c.close();
-                        }
-                    }
-                }
+            result -> {
+                getContactName(result);
             });
+
+
+
+    private void getPermissionToReadUserContacts(){
+        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_CONTACTS)
+                != PackageManager.PERMISSION_GRANTED){
+            //ToDo: display message that permission is not granted
+        }else{
+            mRequestLauncher.launch(Manifest.permission.READ_CONTACTS);
+        }
+    }
+
     private static class RetrieveTask extends AsyncTask< Void,Void,Crime >{
         private final WeakReference<CrimeFragment> activityReference;
         private UUID mUUID;
@@ -280,6 +284,60 @@ public class CrimeFragment extends Fragment {
         protected Void doInBackground(Void... voids) {
             activityReference.get().mCrimeDatabase.getCrimeDao().delete(crime);
             return null;
+        }
+    }
+
+    private void getContactName(ActivityResult result){
+        if (result.getResultCode() == Activity.RESULT_OK) {
+            Intent data = result.getData();
+            Uri contactUri = data.getData();
+            String[] queryFields = new String[]{
+                    ContactsContract.Contacts.DISPLAY_NAME
+            };
+            Cursor c = requireActivity().getContentResolver()
+                    .query(contactUri,queryFields,
+                            null,null,null);
+            try {
+                if (c.getCount() == 0){
+                    return ;
+                }
+                c.moveToFirst();
+                String suspect = c.getString(0);
+                mCrime.setSuspect(suspect);
+                mSuspectButton.setText(suspect);
+            }finally {
+                c.close();
+            }
+        }
+    }
+    private void getContactNumber(ActivityResult result){
+        if (result.getResultCode() == Activity.RESULT_OK){
+            Intent data = result.getData();
+            Uri contactUri = data.getData();
+            Cursor cursorId = requireActivity().getContentResolver()
+                    .query(contactUri,new String[]{ContactsContract.Contacts._ID},
+                            null,null,null);
+            if (cursorId.getCount() == 0){
+                return ;
+            }
+            cursorId.moveToFirst();
+            String id = cursorId.getString(0);
+            cursorId.close();
+
+            Cursor cursorPhone = requireActivity().getContentResolver()
+                    .query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                            new String[]{ContactsContract.CommonDataKinds.Phone.NUMBER},
+                            ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ? AND " +
+                                    ContactsContract.CommonDataKinds.Phone.TYPE + " = " +
+                                    ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE,
+
+                            new String[]{id},
+                            null);
+            if (cursorPhone.getCount() == 0){
+                return ;
+            }
+            cursorPhone.moveToFirst();
+            mContactNumber = cursorPhone.getString(0);
         }
     }
 }
