@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Crimes</string>
+    <string name="crime_title_hint">Write crime\'s title</string>
+    <string name="crime_title_label">Title</string>
+    <string name="crime_details_label">Details</string>
+    <string name="crime_solved_label">Solved</string>
+    <string name="new_crime">New crime</string>
+    <string name="delete_crime">Delete crime</string>
+    <string name="show_subtitle">Show subtitle</string>
+    <string name="hide_subtitle">Hide subtitle</string>
+    <string name="permission_message">Permission was not granted</string>
+    <string name="choose_button">Choose suspect</string>
+    <string name="send_report_button">Send report</string>
+    <string name="crime_report">%1s!     Crime was discovered on %2s. %3s и %4s .</string>
+    <string name="crime_report_solved">The case is solved</string>
+    <string name="crime_report_unsolved">The case is not solved</string>
+    <string name="crime_report_no_suspect">there is no suspect</string>
+    <string name="crime_report_suspect">the suspect is %s</string>
+    <string name="crime_report_subject">Crimes Crime report</string>
+    <string name="send_report">Send report via ..</string>
+    <string name="dial_a_number">Dial</string>
+    <plurals name="subtitle_plural">
+        <item quantity="one">%d crime</item>
+        <item quantity="other">%d crimes</item>
+    </plurals>
+</resources>

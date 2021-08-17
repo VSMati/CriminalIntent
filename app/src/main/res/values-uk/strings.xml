@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Злочини</string>
+    <string name="crime_title_hint">Напишіть назву злочину</string>
+    <string name="crime_title_label">Назва</string>
+    <string name="crime_details_label">Деталі</string>
+    <string name="crime_solved_label">Вирішено</string>
+    <string name="new_crime">Новий злочин</string>
+    <string name="delete_crime">Видалити злочин</string>
+    <string name="show_subtitle">Показати підзаголовок</string>
+    <string name="hide_subtitle">Приховати підзаголовок</string>
+    <string name="permission_message">Дозвіл не був наданий</string>
+    <string name="choose_button">Оберіть злочинця</string>
+    <string name="send_report_button">Відправити звіт</string>
+    <string name="crime_report">%1s!     Злочин було знайдено %2s. %3s и %4s .</string>
+    <string name="crime_report_solved">Воно було вирішено</string>
+    <string name="crime_report_unsolved">Воно не було вирішено</string>
+    <string name="crime_report_no_suspect">злочинців немає</string>
+    <string name="crime_report_suspect">злочинцем є %s</string>
+    <string name="crime_report_subject">Злочини Звіт про злочинність</string>
+    <string name="send_report">Відправити звіт за допомогою...</string>
+    <string name="dial_a_number">Зателефонувати</string>
+    <plurals name="subtitle_plural">
+        <item quantity="one">%d злочин</item>
+        <item quantity="many">%d злочинів</item>
+        <item quantity="few">%d злочина</item>
+    </plurals>
+</resources>

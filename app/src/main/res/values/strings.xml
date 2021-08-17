@@ -19,8 +19,7 @@
     <string name="choose_button">Выберите виновного</string>
     <string name="send_report_button">Отправить сводку</string>
 
-    <string name="crime_report">%1s!
-    Преступление было обнаружено %2s. %3s и %4s .</string>
+    <string name="crime_report">%1s!     Преступление было обнаружено %2s. %3s и %4s .</string>
 
     <string name="crime_report_solved">Оно было решено</string>
     <string name="crime_report_unsolved">Оно не было решено</string>
