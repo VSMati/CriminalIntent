@@ -3,6 +3,7 @@ package com.example.criminalintent.database;
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverter;
 import androidx.room.TypeConverters;
@@ -95,5 +96,10 @@ public class Crime {
 
     public void setNumber(String number) {
         mNumber = number;
+    }
+
+    @Ignore
+    public String getPhotoFileName(){
+        return "IMG_" + getId().toString() + ".jpg";
     }
 }

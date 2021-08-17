@@ -4,11 +4,17 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -20,30 +26,39 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageView;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.core.app.NavUtils;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
 import com.example.criminalintent.R;
 import com.example.criminalintent.database.Crime;
 import com.example.criminalintent.database.CrimeDatabase;
+import com.example.criminalintent.pictures.PictureUtils;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 public class CrimeFragment extends Fragment {
     private Crime mCrime;
     private EditText mTitleField;
-    private Button mDateButton, mSendButton, mSuspectButton, mDialButton;
+    private Button mDateButton, mSendButton, mSuspectButton, mDialButton, mCameraButton;
     private CheckBox mSolvedCheckBox;
     private CrimeDatabase mCrimeDatabase;
+    private ImageView mPhoto;
+
+    private File mPhotoFile;
 
     private static final String ARG_CRIME_ID = "crime_id";
 
@@ -68,6 +83,24 @@ public class CrimeFragment extends Fragment {
                             //TODO: add dialog-explanation
                         }
                     });
+    final Intent takePhoto = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+    //todo: can't seem to set a photo to imageview
+    private ActivityResultLauncher<Intent> mPhotoLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                Uri uri = FileProvider.getUriForFile(requireActivity(),
+                        "com.example.criminalintent.fileprovider",mPhotoFile);
+                takePhoto.putExtra(MediaStore.EXTRA_OUTPUT,uri);
+
+                List<ResolveInfo> cameraActivities = requireActivity().
+                        getPackageManager().queryIntentActivities(takePhoto,
+                        PackageManager.MATCH_DEFAULT_ONLY);
+                for (ResolveInfo activity : cameraActivities){
+                    requireActivity().grantUriPermission(activity.activityInfo.packageName,
+                            uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                }
+                updatePhotoView();
+                getActivity().revokeUriPermission(uri,Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            });
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
@@ -100,6 +133,7 @@ public class CrimeFragment extends Fragment {
         } catch (ExecutionException | InterruptedException e) {
             e.printStackTrace();
         }
+        mPhotoFile = mCrimeDatabase.getPhotoFile(mCrime,getContext());
     }
 
     @Override
@@ -113,6 +147,8 @@ public class CrimeFragment extends Fragment {
         mSendButton = v.findViewById(R.id.btnReport);
         mSuspectButton = v.findViewById(R.id.btnSuspect);
         mDialButton = v.findViewById(R.id.btnDial);
+        mCameraButton = v.findViewById(R.id.btnCamera);
+        mPhoto = v.findViewById(R.id.ivPhoto);
 
         return v;
     }
@@ -128,6 +164,7 @@ public class CrimeFragment extends Fragment {
         }
 
         updateDate(mCrime.getDate());
+        updatePhotoView();
 
         mSolvedCheckBox.setChecked(mCrime.isSolved());
         mSolvedCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> mCrime.setSolved(isChecked));
@@ -182,6 +219,14 @@ public class CrimeFragment extends Fragment {
             Date date = (Date) result.getSerializable(DatePickerFragment.KEY_DATE);
             updateDate(date);
         });
+
+        boolean canTakePhoto = mPhotoFile != null &&
+                takePhoto.resolveActivity(getActivity().getPackageManager()) != null;
+        mCameraButton.setEnabled(canTakePhoto);
+
+        mCameraButton.setOnClickListener( v -> {
+            mPhotoLauncher.launch(takePhoto);
+        });
     }
 
     @Override
@@ -208,6 +253,17 @@ public class CrimeFragment extends Fragment {
         mCrime.setDate(date);
         new UpdateTask(CrimeFragment.this,mCrime)
                 .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    public void updatePhotoView(){
+        if (mPhotoFile == null || !mPhotoFile.exists()){
+            mPhoto.setColorFilter(ContextCompat.getColor(requireContext(),R.color.black));
+        } else {
+            //Bitmap initialBitmap = BitmapFactory.decodeFile(mPhotoFile.getPath());
+            setPic();
+            /*Bitmap bitmap = PictureUtils.getResizedBitmap(initialBitmap,80,80);
+            mPhoto.setImageBitmap(bitmap);*/
+        }
     }
 
     public String getCrimeReport(){
@@ -334,6 +390,28 @@ public class CrimeFragment extends Fragment {
             String number = cursorPhone.getString(0);
             mCrime.setNumber(number);
         }
+    }
+
+    private void setPic(){
+        int targetW = mPhoto.getWidth();
+        int targetH = mPhoto.getHeight();
+
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+
+        BitmapFactory.decodeFile(mPhotoFile.getPath(),options);
+        int photoW = options.outWidth;
+        int photoH = options.outHeight;
+
+        int scaleFactor = Math.max(1,Math.min(photoW/targetW,photoH/targetH));
+
+        options.inJustDecodeBounds = false;
+        options.inSampleSize = scaleFactor;
+        options.inPurgeable = true;
+
+        Bitmap bitmap = BitmapFactory.decodeFile(mPhotoFile.getPath(),options);
+        mPhoto.setImageBitmap(bitmap);
+
     }
 }
 
