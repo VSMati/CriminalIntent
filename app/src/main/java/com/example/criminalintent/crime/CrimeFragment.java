@@ -2,6 +2,9 @@ package com.example.criminalintent.crime;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -43,6 +46,7 @@ import com.example.criminalintent.database.CrimeDatabase;
 import com.example.criminalintent.pictures.PictureUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.text.DateFormat;
 import java.util.Date;
@@ -62,7 +66,7 @@ public class CrimeFragment extends Fragment {
 
     private static final String ARG_CRIME_ID = "crime_id";
 
-    private final ActivityResultLauncher<Intent> launchSomeActivity = registerForActivityResult(
+    private final ActivityResultLauncher<Intent> mRetrieveLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 getContactName(result);
@@ -78,29 +82,28 @@ public class CrimeFragment extends Fragment {
                     result -> {
                         if (result){
                             //TODO: continue workflow
-                            launchSomeActivity.launch(pickContact);
+                            mRetrieveLauncher.launch(pickContact);
                         }else{
                             //TODO: add dialog-explanation
                         }
                     });
     final Intent takePhoto = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
     //todo: can't seem to set a photo to imageview
-    private ActivityResultLauncher<Intent> mPhotoLauncher =
+    final ActivityResultLauncher<Intent> mPhotoLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-                Uri uri = FileProvider.getUriForFile(requireActivity(),
+                ContextWrapper cw = new ContextWrapper(getActivity().getApplicationContext());
+                File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+                mPhotoFile = new File(directory,mCrime.getPhotoFileName());
+                Uri uri = FileProvider.getUriForFile(requireContext(),
                         "com.example.criminalintent.fileprovider",mPhotoFile);
                 takePhoto.putExtra(MediaStore.EXTRA_OUTPUT,uri);
 
-                List<ResolveInfo> cameraActivities = requireActivity().
-                        getPackageManager().queryIntentActivities(takePhoto,
-                        PackageManager.MATCH_DEFAULT_ONLY);
-                for (ResolveInfo activity : cameraActivities){
-                    requireActivity().grantUriPermission(activity.activityInfo.packageName,
-                            uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                }
-                updatePhotoView();
-                getActivity().revokeUriPermission(uri,Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                Uri imageUri = result.getData().getData();
+                ContentResolver cr = requireActivity().getContentResolver();
+                Bitmap bitmap = PictureUtils.getBitmapFromUri(imageUri,cr);
+                PictureUtils.saveToInternalStorage(bitmap,mPhotoFile);
             });
+
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
@@ -226,6 +229,7 @@ public class CrimeFragment extends Fragment {
 
         mCameraButton.setOnClickListener( v -> {
             mPhotoLauncher.launch(takePhoto);
+            updatePhotoView();
         });
     }
 
@@ -260,10 +264,7 @@ public class CrimeFragment extends Fragment {
         if (mPhotoFile == null || !mPhotoFile.exists()){
             mPhoto.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.purple_500));
         } else {
-            File sd = Environment.getDataDirectory();
-            File image = new File(sd+mPhotoFile.getPath());
-            Bitmap initialBitmap = BitmapFactory.decodeFile(image.getAbsolutePath());
-            Bitmap bitmap = PictureUtils.getResizedBitmap(initialBitmap,80,80);
+            Bitmap bitmap = PictureUtils.getFromInternalStorage(mPhotoFile);
             mPhoto.setImageBitmap(bitmap);
         }
     }
