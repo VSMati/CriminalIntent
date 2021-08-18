@@ -32,7 +32,10 @@
         app:layout_constraintHorizontal_bias="0.589"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.484" />
+        app:layout_constraintVertical_bias="0.484"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:padding="1dp"/>
 
     <TextView
         android:id="@+id/crime_date"

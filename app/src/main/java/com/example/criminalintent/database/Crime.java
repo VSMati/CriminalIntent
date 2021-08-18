@@ -1,5 +1,7 @@
 package com.example.criminalintent.database;
 
+import android.content.Context;
+
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
@@ -69,8 +71,9 @@ public class Crime {
         return mDate;
     }
 
-    public String getStringDate(){
-        DateFormat dateFormat = DateFormat.getDateInstance();
+    public String getStringDate(Context context){
+        DateFormat dateFormat = android.text.format.DateFormat
+                .getDateFormat(context);
         return dateFormat.format(mDate);
     }
 

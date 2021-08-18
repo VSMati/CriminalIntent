@@ -8,11 +8,11 @@ import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
+
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.text.Editable;
@@ -248,7 +248,8 @@ public class CrimeFragment extends Fragment {
     }
 
     public void updateDate(Date date){
-        DateFormat dateFormat = DateFormat.getDateInstance();
+        DateFormat dateFormat = android.text.format.DateFormat
+                .getDateFormat(getActivity().getApplicationContext());
         mDateButton.setText(dateFormat.format(date));
         mCrime.setDate(date);
         new UpdateTask(CrimeFragment.this,mCrime)
@@ -257,12 +258,13 @@ public class CrimeFragment extends Fragment {
 
     public void updatePhotoView(){
         if (mPhotoFile == null || !mPhotoFile.exists()){
-            mPhoto.setColorFilter(ContextCompat.getColor(requireContext(),R.color.black));
+            mPhoto.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.purple_500));
         } else {
-            //Bitmap initialBitmap = BitmapFactory.decodeFile(mPhotoFile.getPath());
-            setPic();
-            /*Bitmap bitmap = PictureUtils.getResizedBitmap(initialBitmap,80,80);
-            mPhoto.setImageBitmap(bitmap);*/
+            File sd = Environment.getDataDirectory();
+            File image = new File(sd+mPhotoFile.getPath());
+            Bitmap initialBitmap = BitmapFactory.decodeFile(image.getAbsolutePath());
+            Bitmap bitmap = PictureUtils.getResizedBitmap(initialBitmap,80,80);
+            mPhoto.setImageBitmap(bitmap);
         }
     }
 
@@ -274,7 +276,7 @@ public class CrimeFragment extends Fragment {
             solvedString = getString(R.string.crime_report_unsolved);
         }
 
-        String dateString = mCrime.getStringDate();
+        String dateString = mCrime.getStringDate(requireActivity().getApplicationContext());
 
         String suspect;
         if (mCrime.getSuspect() == null){

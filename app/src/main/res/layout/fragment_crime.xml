@@ -24,6 +24,7 @@
                 android:id="@+id/ivPhoto"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
+                android:background="#1B1616"
                 android:cropToPadding="true"
                 android:scaleType="centerInside"
                 tools:srcCompat="@color/cardview_dark_background" />
@@ -54,8 +55,8 @@
                 android:layout_width="279dp"
                 android:layout_height="wrap_content"
                 android:ems="10"
-                android:inputType="textPersonName"
-                android:text="@string/crime_title_hint" />
+                android:hint="@string/crime_title_hint"
+                android:inputType="textPersonName" />
         </LinearLayout>
 
     </LinearLayout>

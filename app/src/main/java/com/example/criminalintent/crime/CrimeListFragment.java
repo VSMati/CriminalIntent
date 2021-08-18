@@ -199,7 +199,7 @@ public class CrimeListFragment extends Fragment {
             holder.getTitleTextView().setText(
                     crime.getTitle());
             holder.getDateTextView().setText(
-                    crime.getStringDate());
+                    crime.getStringDate(requireActivity().getApplicationContext()));
             mSolved.setVisibility(crime.isSolved() ? View.VISIBLE : View.INVISIBLE);
         }
 
