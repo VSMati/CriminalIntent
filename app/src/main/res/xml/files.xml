@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
     <files-path
-        name="crime_photos" path="crime_photos/"/>
+        name="crime_photos" path="."/>
+    <root-path name="crime_photos" path="." />
 </paths>

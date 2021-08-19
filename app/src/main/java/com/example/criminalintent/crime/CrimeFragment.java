@@ -7,15 +7,12 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.text.Editable;
@@ -46,14 +43,13 @@ import com.example.criminalintent.database.CrimeDatabase;
 import com.example.criminalintent.pictures.PictureUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.text.DateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
+@SuppressWarnings({"rawtypes", "deprecation"})
 public class CrimeFragment extends Fragment {
     private Crime mCrime;
     private EditText mTitleField;
@@ -63,6 +59,8 @@ public class CrimeFragment extends Fragment {
     private ImageView mPhoto;
 
     private File mPhotoFile;
+    private Uri uri;
+    private Bitmap bitmap;
 
     private static final String ARG_CRIME_ID = "crime_id";
 
@@ -77,31 +75,24 @@ public class CrimeFragment extends Fragment {
             ContactsContract.Contacts.CONTENT_URI);
 
 
-    private ActivityResultLauncher mSuspectLauncher =
+    private final ActivityResultLauncher mSuspectLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(),
                     result -> {
                         if (result){
-                            //TODO: continue workflow
                             mRetrieveLauncher.launch(pickContact);
-                        }else{
-                            //TODO: add dialog-explanation
                         }
                     });
+    
     final Intent takePhoto = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-    //todo: can't seem to set a photo to imageview
     final ActivityResultLauncher<Intent> mPhotoLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-                ContextWrapper cw = new ContextWrapper(getActivity().getApplicationContext());
-                File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
-                mPhotoFile = new File(directory,mCrime.getPhotoFileName());
-                Uri uri = FileProvider.getUriForFile(requireContext(),
-                        "com.example.criminalintent.fileprovider",mPhotoFile);
-                takePhoto.putExtra(MediaStore.EXTRA_OUTPUT,uri);
-
-                Uri imageUri = result.getData().getData();
                 ContentResolver cr = requireActivity().getContentResolver();
-                Bitmap bitmap = PictureUtils.getBitmapFromUri(imageUri,cr);
-                PictureUtils.saveToInternalStorage(bitmap,mPhotoFile);
+                bitmap = PictureUtils.getBitmapFromUri(uri,cr);
+                if (bitmap != null){
+                    new Thread( new Runnable() { @Override public void run() {
+                        PictureUtils.saveToInternalStorage(bitmap,mPhotoFile);
+                    } } ).start();
+                }
             });
 
 
@@ -136,7 +127,10 @@ public class CrimeFragment extends Fragment {
         } catch (ExecutionException | InterruptedException e) {
             e.printStackTrace();
         }
-        mPhotoFile = mCrimeDatabase.getPhotoFile(mCrime,getContext());
+
+        ContextWrapper cw = new ContextWrapper(requireActivity().getApplicationContext());
+        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+        mPhotoFile = new File(directory,mCrime.getPhotoFileName());
     }
 
     @Override
@@ -205,9 +199,7 @@ public class CrimeFragment extends Fragment {
             startActivity(intent);
         });
 
-        mSuspectButton.setOnClickListener( v -> {
-           getPermissionToReadUserContacts();
-        });
+        mSuspectButton.setOnClickListener( v -> getPermissionToReadUserContacts());
 
         mDialButton.setOnClickListener(v -> {
             Intent dialContact = new Intent(Intent.ACTION_DIAL,Uri.parse("tel:"+mCrime.getNumber()));
@@ -224,13 +216,22 @@ public class CrimeFragment extends Fragment {
         });
 
         boolean canTakePhoto = mPhotoFile != null &&
-                takePhoto.resolveActivity(getActivity().getPackageManager()) != null;
+                takePhoto.resolveActivity(requireActivity().getPackageManager()) != null;
         mCameraButton.setEnabled(canTakePhoto);
 
         mCameraButton.setOnClickListener( v -> {
+            uri = FileProvider.getUriForFile(requireContext(),
+                    "com.example.criminalintent.fileprovider",mPhotoFile);
+            takePhoto.putExtra(MediaStore.EXTRA_OUTPUT,uri);
+
             mPhotoLauncher.launch(takePhoto);
-            updatePhotoView();
         });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        updatePhotoView();
     }
 
     @Override
@@ -253,7 +254,7 @@ public class CrimeFragment extends Fragment {
 
     public void updateDate(Date date){
         DateFormat dateFormat = android.text.format.DateFormat
-                .getDateFormat(getActivity().getApplicationContext());
+                .getDateFormat(requireActivity().getApplicationContext());
         mDateButton.setText(dateFormat.format(date));
         mCrime.setDate(date);
         new UpdateTask(CrimeFragment.this,mCrime)
@@ -365,8 +366,8 @@ public class CrimeFragment extends Fragment {
     }
     private void getContactNumber(ActivityResult result){
         if (result.getResultCode() == Activity.RESULT_OK){
-            Intent data = result.getData();
-            Uri contactUri = data.getData();
+            assert result.getData() != null;
+            Uri contactUri = result.getData().getData();
             Cursor cursorId = requireActivity().getContentResolver()
                     .query(contactUri,new String[]{ContactsContract.Contacts._ID},
                             null,null,null);
@@ -392,29 +393,8 @@ public class CrimeFragment extends Fragment {
             cursorPhone.moveToFirst();
             String number = cursorPhone.getString(0);
             mCrime.setNumber(number);
+            cursorPhone.close();
         }
-    }
-
-    private void setPic(){
-        int targetW = mPhoto.getWidth();
-        int targetH = mPhoto.getHeight();
-
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-
-        BitmapFactory.decodeFile(mPhotoFile.getPath(),options);
-        int photoW = options.outWidth;
-        int photoH = options.outHeight;
-
-        int scaleFactor = Math.max(1,Math.min(photoW/targetW,photoH/targetH));
-
-        options.inJustDecodeBounds = false;
-        options.inSampleSize = scaleFactor;
-        options.inPurgeable = true;
-
-        Bitmap bitmap = BitmapFactory.decodeFile(mPhotoFile.getPath(),options);
-        mPhoto.setImageBitmap(bitmap);
-
     }
 }
 

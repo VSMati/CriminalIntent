@@ -25,4 +25,5 @@
         <item quantity="many">%d злочинів</item>
         <item quantity="few">%d злочина</item>
     </plurals>
+    <string name="description_picture">Фото злочину</string>
 </resources>

@@ -28,4 +28,6 @@
     <string name="crime_report_subject">Криминал Сводка о преступлении</string>
     <string name="send_report">Отправить сводку с помощью…</string>
     <string name="dial_a_number">Позвонить </string>
+
+    <string name="description_picture">Фото проишествия</string>
 </resources>

@@ -24,4 +24,5 @@
         <item quantity="one">%d crime</item>
         <item quantity="other">%d crimes</item>
     </plurals>
+    <string name="description_picture">Photo of crime</string>
 </resources>

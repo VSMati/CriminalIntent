@@ -8,8 +8,10 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.Point;
 import android.net.Uri;
+import android.os.ParcelFileDescriptor;
 
 import java.io.File;
+import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -39,25 +41,11 @@ public class PictureUtils {
         return BitmapFactory.decodeFile(path,options);
     }
 
-    public static Bitmap getBitmapFromUri(Uri uri, ContentResolver co){
+    public static Bitmap getBitmapFromUri(Uri uri, ContentResolver cr){
         try {
-            InputStream iS = co.openInputStream(uri);
-            BitmapFactory.Options opt = new BitmapFactory.Options();
-            opt.inJustDecodeBounds = true;
-            BitmapFactory.decodeStream(iS,null,opt);
-            if ((opt.outWidth == -1) || (opt.outHeight == -1)) {
-                return null;
-            }
-            int originalSize = Math.max(opt.outHeight, opt.outWidth);
-            double ratio = (originalSize > THUMBNAIL_SIZE)
-                    ? (originalSize / THUMBNAIL_SIZE) : 1.0;
-
-            BitmapFactory.Options opts = new BitmapFactory.Options();
-            opts.inSampleSize = getPowerOfTwoForSampleRatio(ratio);
-            iS = co.openInputStream(uri);
-            Bitmap bitmap = BitmapFactory.decodeStream(iS);
-            iS.close();
-            return bitmap;
+            ParcelFileDescriptor pfd = cr.openFileDescriptor(uri,"r");
+            FileDescriptor fd = pfd.getFileDescriptor();
+            return BitmapFactory.decodeFileDescriptor(fd);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -81,8 +69,7 @@ public class PictureUtils {
     }
 
     public static Bitmap getFromInternalStorage(File file){
-        Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
-        return bitmap;
+        return BitmapFactory.decodeFile(file.getAbsolutePath());
     }
 
     public static Bitmap getResizedBitmap(Bitmap bm, int newWidth, int newHeight) {
